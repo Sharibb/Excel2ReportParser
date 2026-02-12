@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import phase1, phase2, cleanup
+from app.api.routes import phase1, phase2, phase3, cleanup
 from app.core.config import settings
 from app.core.logging import LoggerSetup
 
@@ -48,6 +48,7 @@ app.add_middleware(
 # Include routers
 app.include_router(phase1.router, prefix="/api")
 app.include_router(phase2.router, prefix="/api")
+app.include_router(phase3.router, prefix="/api")
 app.include_router(cleanup.router, prefix="/api/cleanup", tags=["Cleanup"])
 
 
@@ -93,6 +94,7 @@ async def info() -> dict[str, Any]:
         "endpoints": {
             "phase1_parse": "/api/phase1/parse",
             "phase2_generate": "/api/phase2/generate",
+            "phase3_generate": "/api/phase3/generate",
             "cache_info": "/api/cleanup/cache-info",
             "purge_cache": "/api/cleanup/purge-cache",
         },

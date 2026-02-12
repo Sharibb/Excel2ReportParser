@@ -1,6 +1,7 @@
 """Validation utility functions."""
 
 import re
+import zipfile
 from pathlib import Path
 from typing import Optional
 from zipfile import BadZipFile
@@ -130,6 +131,42 @@ def validate_poc_folder(folder_path: str) -> Path:
         raise ValidationError(f"Path is not a directory: {path}")
 
     return path
+
+
+def validate_zip_file(file_path: Path) -> None:
+    """
+    Validate that file is a valid ZIP file.
+
+    Args:
+        file_path: Path to .zip file
+
+    Raises:
+        ValidationError: If file is not a valid ZIP file
+    """
+    if not file_path.exists():
+        raise ValidationError(f"File not found: {file_path}")
+
+    if file_path.suffix.lower() != ".zip":
+        raise ValidationError(f"File must be a .zip file, got: {file_path.suffix}")
+
+    try:
+        # Check if it's a valid ZIP file
+        if not zipfile.is_zipfile(file_path):
+            raise ValidationError(f"File is not a valid ZIP file: {file_path}")
+
+        # Try to open it
+        with zipfile.ZipFile(file_path, "r") as zip_ref:
+            # Test the ZIP integrity
+            zip_ref.testzip()
+
+        logger.info(f"Valid ZIP file: {file_path}")
+
+    except BadZipFile:
+        raise ValidationError(
+            f"File is not a valid ZIP file (corrupted or wrong format): {file_path}"
+        )
+    except Exception as e:
+        raise ValidationError(f"Failed to validate ZIP file: {str(e)}")
 
 
 def validate_vulnerability_id(vuln_id: str) -> str:

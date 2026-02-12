@@ -127,11 +127,21 @@
         .phase-card {
             cursor: pointer;
             transition: all 0.3s ease;
+            height: 100%;
         }
 
         .phase-card:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .phase-card .card-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phase-card .mt-auto {
+            margin-top: auto !important;
         }
 
         .status-badge {
@@ -162,6 +172,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('phase2') }}"><i class="bi bi-file-earmark-word"></i> Phase 2</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('phase3') }}"><i class="bi bi-stars"></i> Phase 3</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/health" target="_blank"><i class="bi bi-heart-pulse"></i> Health</a>

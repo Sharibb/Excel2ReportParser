@@ -64,13 +64,41 @@ poetry run uvicorn app.main:app --reload
 - ✅ Ingest structured Excel files
 - ✅ Populate Word templates with data
 - ✅ **Duplicate tables WITHOUT recreating them** (preserves formatting)
-- ✅ Insert PoC images automatically
+- ✅ Insert PoC images from manual folder path
 - ✅ Replace placeholders intelligently
 - ✅ Maintain all template styles and formatting
 - ✅ Support custom branding and layouts
 
-**Input:** Excel data + Word template + PoC images (optional)  
+**Input:** Excel data + Word template + PoC folder path (optional)  
 **Output:** Professional Word report ready for delivery
+
+### ⭐ Phase 3: Complete Report with PoC ZIP
+
+**Automated report generation with ZIP-based PoC handling:**
+
+- ✅ All Phase 2 features included
+- ✅ Upload PoC screenshots as ZIP file
+- ✅ Automatic ZIP extraction
+- ✅ Automatic PoC folder mapping to vulnerability IDs
+- ✅ No manual path specification needed
+- ✅ Self-contained portable packages
+- ✅ One-click complete report generation
+
+**Input:** Excel data + Word template + PoC ZIP file  
+**Output:** Professional Word report with all PoCs automatically inserted
+
+**ZIP Structure:**
+```
+POC.zip
+└── POC/
+    ├── C1/     (Critical 1)
+    │   ├── 1.png
+    │   └── 2.png
+    ├── H1/     (High 1)
+    │   └── 1.png
+    └── M1/     (Medium 1)
+        └── 1.png
+```
 
 ---
 
@@ -241,8 +269,9 @@ nano .env
 **Access the user-friendly web interface:**
 
 - **Landing Page:** http://localhost:5000
-- **Phase 1 (Word→Excel):** http://localhost:5000/phase1
-- **Phase 2 (Excel→Word):** http://localhost:5000/phase2
+- **Phase 1 (Get Templates):** http://localhost:5000/phase1
+- **Phase 2 (Excel + Template + Manual PoC):** http://localhost:5000/phase2
+- **Phase 3 (Excel + Template + PoC ZIP):** http://localhost:5000/phase3
 - **Health Check:** http://localhost:5000/health
 
 Features:
@@ -292,6 +321,28 @@ curl -X POST "http://localhost:8000/api/phase2/generate" \
   -F "template_file=@template.docx" \
   -F "poc_folder=./poc_images" \
   --output final_report.docx
+```
+
+### Phase 3: Generate with PoC ZIP
+
+```http
+POST /api/phase3/generate
+```
+
+**Upload:**
+- Excel file (.xlsx)
+- Template file (.docx)
+- PoC ZIP file (.zip with C1/, H1/, M1/ folders)
+
+**Returns:** Generated Word document with all PoCs
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8000/api/phase3/generate" \
+  -F "excel_file=@vulnerabilities.xlsx" \
+  -F "template_file=@template.docx" \
+  -F "poc_zip=@poc_screenshots.zip" \
+  --output complete_report.docx
 ```
 
 ### Cache Management
