@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Phase 2 - Excel to Word{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="bi bi-arrow-left-circle"></i> Phase 2: Generate Word Document
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>What this does:</strong> Upload Excel data and a Word template to generate 
+                    a complete vulnerability report with proper formatting and optional PoC images.
+                </div>
+
+                <form id="phase2Form" enctype="multipart/form-data">
+                    <div class="row">
+                        <!-- Excel File Upload -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-excel"></i> Excel Data File (.xlsx)
+                            </label>
+                            <div class="upload-area" id="excelUploadArea">
+                                <i class="bi bi-file-earmark-spreadsheet" style="font-size: 2.5rem; color: #217346;"></i>
+                                <h6 class="mt-2">Excel File</h6>
+                                <p class="text-muted small mb-2">Vulnerability data</p>
+                                <input type="file" class="form-control" id="excelFile" name="excel_file" 
+                                       accept=".xlsx,.xls" required style="display: none;">
+                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                        onclick="document.getElementById('excelFile').click()">
+                                    <i class="bi bi-folder2-open"></i> Browse
+                                </button>
+                            </div>
+                            <div id="excelFileInfo" class="mt-2" style="display: none;">
+                                <div class="alert alert-success mb-0 py-2">
+                                    <small><i class="bi bi-file-earmark-check"></i> <span id="excelFileName"></span></small>
+                                    <button type="button" class="btn-close btn-sm float-end" onclick="clearExcelFile()"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template File Upload -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-word"></i> Word Template (.docx)
+                            </label>
+                            <div class="upload-area" id="templateUploadArea">
+                                <i class="bi bi-file-earmark-word" style="font-size: 2.5rem; color: #2b579a;"></i>
+                                <h6 class="mt-2">Template File</h6>
+                                <p class="text-muted small mb-2">Report template</p>
+                                <input type="file" class="form-control" id="templateFile" name="template_file" 
+                                       accept=".docx" required style="display: none;">
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="document.getElementById('templateFile').click()">
+                                    <i class="bi bi-folder2-open"></i> Browse
+                                </button>
+                            </div>
+                            <div id="templateFileInfo" class="mt-2" style="display: none;">
+                                <div class="alert alert-primary mb-0 py-2">
+                                    <small><i class="bi bi-file-earmark-check"></i> <span id="templateFileName"></span></small>
+                                    <button type="button" class="btn-close btn-sm float-end" onclick="clearTemplateFile()"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PoC Folder (Optional) -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-folder"></i> PoC Images Folder (Optional)
+                        </label>
+                        <input type="text" class="form-control" id="pocFolder" name="poc_folder" 
+                               placeholder="e.g., /path/to/poc/images or leave empty">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> Absolute path to folder containing PoC screenshot folders
+                        </small>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="bi bi-play-circle"></i> Generate Report
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Progress Container -->
+                <div class="progress-container" id="progressContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border spinner-border-custom text-primary" role="status">
+                            <span class="visually-hidden">Generating...</span>
+                        </div>
+                        <h5 class="mt-3">Generating your report...</h5>
+                        <p class="text-muted">This may take a few moments</p>
+                    </div>
+                </div>
+
+                <!-- Result Container -->
+                <div id="resultContainer" style="display: none;" class="mt-4">
+                    <div class="alert alert-success">
+                        <h5><i class="bi bi-check-circle"></i> Success!</h5>
+                        <p class="mb-3" id="resultMessage"></p>
+                        <a href="#" id="downloadLink" class="btn btn-success">
+                            <i class="bi bi-download"></i> Download Word Document
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Error Container -->
+                <div id="errorContainer" style="display: none;" class="mt-4">
+                    <div class="alert alert-danger">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Error</h5>
+                        <p class="mb-0" id="errorMessage"></p>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="card mt-4 bg-light">
+                    <div class="card-body">
+                        <h6><i class="bi bi-question-circle"></i> How it works:</h6>
+                        <ol class="mb-0">
+                            <li>Upload Excel file with structured vulnerability data</li>
+                            <li>Upload Word template with placeholders</li>
+                            <li>Optionally provide path to PoC images folder</li>
+                            <li>System populates template while preserving all formatting</li>
+                            <li>Download the generated Word document</li>
+                        </ol>
+                        <hr>
+                        <h6><i class="bi bi-lightbulb"></i> Tips:</h6>
+                        <ul class="mb-0">
+                            <li>Template formatting is never altered</li>
+                            <li>PoC images are auto-inserted based on Step columns</li>
+                            <li>TOC compatibility is maintained</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const excelUploadArea = document.getElementById('excelUploadArea');
+    const templateUploadArea = document.getElementById('templateUploadArea');
+    const excelFileInput = document.getElementById('excelFile');
+    const templateFileInput = document.getElementById('templateFile');
+    const excelFileInfo = document.getElementById('excelFileInfo');
+    const templateFileInfo = document.getElementById('templateFileInfo');
+    const excelFileName = document.getElementById('excelFileName');
+    const templateFileName = document.getElementById('templateFileName');
+    const form = document.getElementById('phase2Form');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const resultContainer = document.getElementById('resultContainer');
+    const errorContainer = document.getElementById('errorContainer');
+
+    // Setup drag and drop for Excel
+    setupDragDrop(excelUploadArea, excelFileInput, excelFileInfo, excelFileName);
+    
+    // Setup drag and drop for Template
+    setupDragDrop(templateUploadArea, templateFileInput, templateFileInfo, templateFileName);
+
+    function setupDragDrop(uploadArea, fileInput, fileInfo, fileNameSpan) {
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileInfo(fileInput, fileInfo, fileNameSpan);
+            }
+        });
+
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            updateFileInfo(fileInput, fileInfo, fileNameSpan);
+        });
+    }
+
+    function updateFileInfo(fileInput, fileInfo, fileNameSpan) {
+        if (fileInput.files.length > 0) {
+            fileNameSpan.textContent = fileInput.files[0].name;
+            fileInfo.style.display = 'block';
+        }
+    }
+
+    function clearExcelFile() {
+        excelFileInput.value = '';
+        excelFileInfo.style.display = 'none';
+    }
+
+    function clearTemplateFile() {
+        templateFileInput.value = '';
+        templateFileInfo.style.display = 'none';
+    }
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (excelFileInput.files.length === 0 || templateFileInput.files.length === 0) {
+            alert('Please select both Excel and Template files');
+            return;
+        }
+
+        // Hide previous results
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+
+        // Show progress
+        submitBtn.disabled = true;
+        progressContainer.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('excel_file', excelFileInput.files[0]);
+        formData.append('template_file', templateFileInput.files[0]);
+        
+        const pocFolder = document.getElementById('pocFolder').value.trim();
+        if (pocFolder) {
+            formData.append('poc_folder', pocFolder);
+        }
+
+        try {
+            const response = await fetch('/api/phase2/generate', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            progressContainer.style.display = 'none';
+            submitBtn.disabled = false;
+
+            if (response.ok && data.success) {
+                document.getElementById('resultMessage').textContent = data.message;
+                document.getElementById('downloadLink').href = data.download_url;
+                resultContainer.style.display = 'block';
+            } else {
+                document.getElementById('errorMessage').textContent = data.error || 'An error occurred';
+                errorContainer.style.display = 'block';
+            }
+        } catch (error) {
+            progressContainer.style.display = 'none';
+            submitBtn.disabled = false;
+            document.getElementById('errorMessage').textContent = 'Network error: ' + error.message;
+            errorContainer.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

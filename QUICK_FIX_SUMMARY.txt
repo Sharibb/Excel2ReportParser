@@ -1,0 +1,74 @@
+================================================================================
+                    SUMMARY TABLE BUG - ROOT CAUSE & FIX
+================================================================================
+
+PROBLEM:
+--------
+Summary table showing placeholders instead of actual data:
+  ✅ HIGH findings    - Working
+  ❌ CRITICAL findings - Showing {{CRITICAL_FINDINGS_LIST}}
+  ❌ MEDIUM findings   - Showing {{MEDIUM_FINDINGS_LIST}}
+  ❌ INFO findings     - Showing {{INFO_FINDINGS_LIST}}
+  ✅ LOW findings     - Working
+
+ROOT CAUSE:
+-----------
+Word stores placeholders split across multiple XML text elements:
+
+  Instead of:     <w:t>{{CRITICAL_FINDINGS_LIST}}</w:t>
+  
+  Word actually:  <w:t>{{CRITICAL_</w:t>
+                  <w:t>FINDINGS_</w:t>
+                  <w:t>LIST}}</w:t>
+
+The code was checking individual runs:
+  
+  ❌ if "{{CRITICAL_FINDINGS_LIST}}" in run.text:  # Fails when split!
+  
+Instead of concatenating all runs first:
+  
+  ✅ full_text = "".join([run.text for run in runs])
+     if "{{CRITICAL_FINDINGS_LIST}}" in full_text:  # Always works!
+
+THE FIX:
+--------
+Modified _populate_summary_table() method to use TWO-PASS replacement:
+
+  PASS 1: Try simple replacement (fast path for non-split placeholders)
+          for run in paragraph.runs:
+              if placeholder in run.text:
+                  run.text = run.text.replace(placeholder, value)
+  
+  PASS 2: If not found, handle split placeholders (comprehensive)
+          full_text = "".join([run.text for run in paragraph.runs])
+          if placeholder in full_text:
+              full_text = full_text.replace(placeholder, value)
+              # Consolidate into first run
+              paragraph.runs[0].text = full_text
+              # Clear the rest
+              for run in paragraph.runs[1:]:
+                  run.text = ""
+
+LOCATIONS FIXED:
+----------------
+File: app/services/phase2/word_generator.py
+  - Lines 1031-1070: Finding replacement (when vulnerabilities exist)
+  - Lines 1075-1105: "None" replacement (when no vulnerabilities)
+
+WHY IT WORKS NOW:
+-----------------
+✅ Handles both split and non-split placeholders
+✅ Fast path for simple cases
+✅ Comprehensive fallback for complex cases
+✅ Preserves formatting
+✅ Same pattern used elsewhere in codebase (proven to work)
+
+TESTING:
+--------
+Generate a report with all risk levels and verify:
+1. All placeholders in summary table are replaced
+2. Critical, Medium, and Info findings now show correctly
+3. Formatting (colors, bold) is preserved
+4. Edge cases work (no findings, single finding, multiple findings)
+
+================================================================================

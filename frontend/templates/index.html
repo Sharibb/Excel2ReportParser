@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Vulnerability Report Automation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <!-- Welcome Section -->
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-shield-check feature-icon"></i>
+                <h1 class="display-4 fw-bold mb-3">Vulnerability Report Automation</h1>
+                <p class="lead text-muted mb-4">
+                    Streamline your security reporting workflow with automated document processing
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <span class="badge bg-primary px-3 py-2">
+                        <i class="bi bi-lightning-charge"></i> Fast Processing
+                    </span>
+                    <span class="badge bg-success px-3 py-2">
+                        <i class="bi bi-check-circle"></i> Template Preservation
+                    </span>
+                    <span class="badge bg-info px-3 py-2">
+                        <i class="bi bi-image"></i> PoC Image Support
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase Selection -->
+        <div class="row g-4">
+            <!-- Phase 1 -->
+            <div class="col-md-6">
+                <div class="card phase-card h-100" onclick="window.location.href='{{ url_for('phase1') }}'">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="bi bi-download"></i> Phase 1: Get Template
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-file-earmark-word" style="font-size: 4rem; color: #2b579a;"></i>
+                            <i class="bi bi-arrow-right mx-3" style="font-size: 2rem; color: #6c757d;"></i>
+                            <i class="bi bi-file-earmark-excel" style="font-size: 4rem; color: #217346;"></i>
+                        </div>
+                        <h5 class="mb-3">Download Templates</h5>
+                        <p class="text-muted mb-4">
+                            Get both Excel and Word templates to start your vulnerability reporting 
+                            workflow. Everything you need in one place.
+                        </p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                Excel data template
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                Word report template
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                All risk levels included
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                Ready for Phase 2
+                            </li>
+                        </ul>
+                        <div class="mt-4">
+                            <a href="{{ url_for('phase1') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-download"></i> Get Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="col-md-6">
+                <div class="card phase-card h-100" onclick="window.location.href='{{ url_for('phase2') }}'">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="bi bi-arrow-left-circle"></i> Phase 2: Generate Report
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-file-earmark-excel" style="font-size: 4rem; color: #217346;"></i>
+                            <i class="bi bi-plus mx-3" style="font-size: 2rem; color: #6c757d;"></i>
+                            <i class="bi bi-file-earmark-word" style="font-size: 4rem; color: #2b579a;"></i>
+                        </div>
+                        <h5 class="mb-3">Excel + Template → Word Report</h5>
+                        <p class="text-muted mb-4">
+                            Combine Excel data with a Word template to generate a complete 
+                            vulnerability report document.
+                        </p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                Populate Word template
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                Preserve formatting
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                Insert PoC images
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i> 
+                                Maintain TOC compatibility
+                            </li>
+                        </ul>
+                        <div class="mt-4">
+                            <a href="{{ url_for('phase2') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-upload"></i> Start Phase 2
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h4 class="mb-4 text-center">
+                    <i class="bi bi-star-fill text-warning"></i> Key Features
+                </h4>
+                <div class="row text-center">
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="bi bi-lightning-charge-fill" style="font-size: 2.5rem; color: var(--warning-color);"></i>
+                        <h6 class="mt-2">Fast Processing</h6>
+                        <small class="text-muted">Quick turnaround time</small>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="bi bi-shield-lock-fill" style="font-size: 2.5rem; color: var(--success-color);"></i>
+                        <h6 class="mt-2">Template Safe</h6>
+                        <small class="text-muted">Never breaks formatting</small>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="bi bi-image-fill" style="font-size: 2.5rem; color: var(--secondary-color);"></i>
+                        <h6 class="mt-2">PoC Images</h6>
+                        <small class="text-muted">Automatic insertion</small>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <i class="bi bi-check-circle-fill" style="font-size: 2.5rem; color: var(--danger-color);"></i>
+                        <h6 class="mt-2">Production Ready</h6>
+                        <small class="text-muted">Enterprise quality</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

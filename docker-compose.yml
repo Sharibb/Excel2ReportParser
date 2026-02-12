@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Backend API Service (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vuln-report-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount directories for persistent data
+      - ./uploads:/app/uploads
+      - ./output:/app/output
+      - ./templates:/app/templates
+      - ./logs:/app/logs
+    environment:
+      # Application settings
+      - APP_NAME=Vulnerability Report Automation Service
+      - APP_VERSION=0.1.0
+      - DEBUG=False
+      
+      # Server configuration
+      - HOST=0.0.0.0
+      - PORT=8000
+      
+      # File upload limits
+      - MAX_FILE_SIZE_MB=100
+      
+      # Paths (container paths)
+      - UPLOAD_DIR=/app/uploads
+      - OUTPUT_DIR=/app/output
+      - TEMPLATE_DIR=/app/templates
+      - LOG_DIR=/app/logs
+      
+      # Logging
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - app-network
+
+  # Frontend Web Service (Flask)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vuln-report-frontend
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount directories for file handling
+      - ./frontend/uploads:/app/uploads
+      - ./frontend/downloads:/app/downloads
+    environment:
+      # Backend API URL (use service name for container-to-container communication)
+      - BACKEND_URL=http://backend:8000
+      
+      # Flask configuration
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-please}
+      - PORT=5000
+      - DEBUG=False
+      
+      # Flask app
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
