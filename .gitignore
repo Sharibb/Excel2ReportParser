@@ -60,6 +60,12 @@ Thumbs.db
 templates/output/
 static/uploads/
 
-# EXCEL_FILES/WORD_FILES
+# EXCEL_FILES/WORD_FILES (exclude generated files, but track templates)
 *.xlsx
 *.docx
+# Allow template files needed for Docker builds
+!All_Risk_Levels_Template.xlsx
+!RootNik_Vulnerabilities_Template.xlsx
+!WAPT-Rootnik-Technical.docx
+!frontend/All_Risk_Levels_Template.xlsx
+!frontend/WAPT-Rootnik-Technical.docx
