@@ -1,0 +1,201 @@
+================================================================================
+                    QUICK START: NEW STEPS FORMAT
+================================================================================
+
+✅ IMPLEMENTATION COMPLETE
+
+================================================================================
+WHAT'S NEW
+================================================================================
+
+1. SINGLE STEPS COLUMN
+   - Old: Step1, Step2, Step3, ..., Step10 (10 columns)
+   - New: Steps (1 column with semicolon delimiter)
+   
+2. DELIMITER
+   - Use semicolon (;) to separate steps
+   - Example: "Navigate; Enter payload; Submit; Observe"
+
+3. POC MAPPING
+   - Step 1 → 1.png
+   - Step 2 → 2.png
+   - Step 3 → 3.png
+   - And so on...
+
+================================================================================
+HOW TO USE
+================================================================================
+
+1. GET NEW TEMPLATE
+   
+   Option A: Download from web interface
+   - Start: docker-compose up -d
+   - Visit: http://localhost:5000
+   - Go to Phase 1 and download template
+   
+   Option B: Generate locally
+   - Run: python generate_new_template.py
+
+2. FILL THE TEMPLATE
+   
+   Example Row:
+   ┌──────────────┬─────────────────┬──────────────────────────────────┐
+   │ Vuln ID      │ POC_Folder      │ Steps                            │
+   ├──────────────┼─────────────────┼──────────────────────────────────┤
+   │ C1           │ C1              │ Navigate; Enter; Submit; Observe │
+   └──────────────┴─────────────────┴──────────────────────────────────┘
+   
+   IMPORTANT: Use semicolon (;) NOT comma (,) or period (.)
+
+3. PREPARE POC IMAGES
+   
+   Structure:
+   POC/
+   └── C1/
+       ├── 1.png   ← Step 1
+       ├── 2.png   ← Step 2
+       ├── 3.png   ← Step 3
+       └── 4.png   ← Step 4
+   
+   IMPORTANT: Name images with numbers (1.png, 2.png), NOT step1.png
+
+4. GENERATE REPORT
+   
+   Phase 2 (Manual PoC path):
+   - Upload: Excel + Word template
+   - Provide: PoC folder path
+   - Generate
+   
+   Phase 3 (ZIP PoC):
+   - Upload: Excel + Word template + POC.zip
+   - Generate (automatic mapping)
+
+================================================================================
+EXAMPLES
+================================================================================
+
+Example 1: SQL Injection
+────────────────────────
+POC_Folder: C1
+Steps: Navigate to login; Enter ' OR '1'='1; Submit; Observe bypass
+
+Result:
+  Step 1: Navigate to login       [Image: C1/1.png]
+  Step 2: Enter ' OR '1'='1       [Image: C1/2.png]
+  Step 3: Submit                  [Image: C1/3.png]
+  Step 4: Observe bypass          [Image: C1/4.png]
+
+Example 2: XSS
+──────────────
+POC_Folder: H1
+Steps: Go to search; Inject <script>alert(1)</script>; Submit; Observe popup
+
+Result:
+  Step 1: Go to search                            [Image: H1/1.png]
+  Step 2: Inject <script>alert(1)</script>        [Image: H1/2.png]
+  Step 3: Submit                                  [Image: H1/3.png]
+  Step 4: Observe popup                           [Image: H1/4.png]
+
+Example 3: IDOR
+───────────────
+POC_Folder: M1
+Steps: Login as user A; Navigate to profile; Change id parameter; View data
+
+Result:
+  Step 1: Login as user A             [Image: M1/1.png]
+  Step 2: Navigate to profile         [Image: M1/2.png]
+  Step 3: Change id parameter         [Image: M1/3.png]
+  Step 4: View data                   [Image: M1/4.png]
+
+================================================================================
+COMMON MISTAKES & FIXES
+================================================================================
+
+❌ Wrong: Navigate, Enter, Submit
+✅ Right: Navigate; Enter; Submit
+
+❌ Wrong: C1/step1.png, C1/step2.png
+✅ Right: C1/1.png, C1/2.png
+
+❌ Wrong: Using old template with Step1-Step10 columns
+✅ Right: Download new template with single Steps column
+
+================================================================================
+FILES UPDATED
+================================================================================
+
+Backend:
+  ✅ app/models/vulnerability.py
+  ✅ app/services/phase1/excel_generator.py
+
+Templates:
+  ✅ All_Risk_Levels_Template.xlsx
+  ✅ frontend/All_Risk_Levels_Template.xlsx
+
+Documentation:
+  ✅ STEPS_COLUMN_UPDATE.md (Comprehensive guide)
+  ✅ MIGRATION_QUICK_GUIDE.md (Quick migration)
+  ✅ VISUAL_CHANGES_OVERVIEW.md (Visual diagrams)
+  ✅ CHANGES_SUMMARY.txt (Brief summary)
+  ✅ IMPLEMENTATION_COMPLETE.md (Full implementation)
+  ✅ README.md (Updated)
+
+================================================================================
+TESTING
+================================================================================
+
+1. Download Template
+   [  ] Start services: docker-compose up -d
+   [  ] Visit: http://localhost:5000
+   [  ] Download Excel template from Phase 1
+   [  ] Verify "Steps" column exists
+
+2. Fill Data
+   [  ] Add vulnerability data
+   [  ] Use semicolon-delimited steps
+   [  ] Verify POC_Folder matches folder names
+
+3. Prepare PoCs
+   [  ] Create folder structure: POC/C1/, POC/H1/, etc.
+   [  ] Name images: 1.png, 2.png, 3.png, etc.
+   [  ] Create ZIP if using Phase 3
+
+4. Generate Report
+   [  ] Test Phase 2 (manual path)
+   [  ] Test Phase 3 (ZIP file)
+   [  ] Verify steps parse correctly
+   [  ] Verify images insert correctly
+
+================================================================================
+SUPPORT
+================================================================================
+
+Documentation:
+- Full technical guide: STEPS_COLUMN_UPDATE.md
+- Quick migration: MIGRATION_QUICK_GUIDE.md
+- Visual overview: VISUAL_CHANGES_OVERVIEW.md
+- Complete implementation: IMPLEMENTATION_COMPLETE.md
+
+Generate New Template:
+  python generate_new_template.py
+
+Start Services:
+  docker-compose up -d
+
+Access Services:
+  Frontend: http://localhost:5000
+  Backend:  http://localhost:8000/docs
+
+================================================================================
+KEY POINTS
+================================================================================
+
+✓ Use SEMICOLON (;) to separate steps
+✓ Name images with NUMBERS (1.png, 2.png, NOT step1.png)
+✓ Download NEW template (old format not supported)
+✓ POC_Folder must match folder name in ZIP
+✓ Steps are unlimited (not restricted to 10)
+
+================================================================================
+STATUS: ✅ READY TO USE
+================================================================================

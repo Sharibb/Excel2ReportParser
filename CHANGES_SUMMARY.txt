@@ -1,0 +1,189 @@
+================================================================================
+                     STEPS COLUMN UPDATE - SUMMARY
+================================================================================
+
+Date: February 12, 2026
+Version: 2.0
+
+================================================================================
+WHAT CHANGED
+================================================================================
+
+1. EXCEL TEMPLATE STRUCTURE
+   
+   OLD FORMAT (No longer supported):
+   ----------------------------------
+   | POC_Folder | Step1 | Step2 | Step3 | ... | Step10 |
+   
+   NEW FORMAT (Current):
+   ---------------------
+   | POC_Folder | Steps | CWE ID | Impact | References | Remediation Effort |
+   
+   - Consolidated 10 separate columns into 1 "Steps" column
+   - Added 4 new metadata columns
+   - Steps are now semicolon-delimited (`;`)
+
+2. DATA FORMAT
+   
+   Example Steps Cell:
+   -------------------
+   Navigate to login page; Enter ' OR '1'='1; Submit form; Observe bypass
+   
+   - Each step separated by semicolon (`;`)
+   - Whitespace automatically trimmed
+   - No limit on step count (previously limited to 10)
+
+3. POC IMAGE MAPPING
+   
+   Mapping Logic:
+   --------------
+   Step 1 text → 1.png
+   Step 2 text → 2.png
+   Step 3 text → 3.png
+   And so on...
+   
+   - Image names remain numeric (1.png, 2.png, etc.)
+   - Step position in delimited string determines image number
+   - No changes to WordGenerator image insertion logic
+
+================================================================================
+FILES MODIFIED
+================================================================================
+
+Backend Code:
+-------------
+1. app/models/vulnerability.py
+   - Removed: step1, step2, ..., step10 fields from VulnerabilityExcelRow
+   - Added: Single 'steps' field (Optional[str])
+   - Updated: to_vulnerability() to parse semicolon-delimited string
+
+2. app/services/phase1/excel_generator.py
+   - Updated: HEADERS to include "Steps" and new metadata columns
+   - Modified: _add_vulnerabilities() to join steps with "; "
+   - Updated: _apply_formatting() for new column widths
+
+Template Files:
+---------------
+3. All_Risk_Levels_Template.xlsx (root)
+   - Regenerated with new structure
+   - Contains 3 example vulnerabilities
+
+4. frontend/All_Risk_Levels_Template.xlsx
+   - Updated to match root template
+
+Scripts:
+--------
+5. generate_new_template.py (NEW)
+   - Script to regenerate Excel templates
+   - Creates templates in root and frontend directories
+
+Documentation:
+--------------
+6. STEPS_COLUMN_UPDATE.md (NEW)
+   - Comprehensive documentation of changes
+   - Migration guide
+   - Usage examples
+
+7. MIGRATION_QUICK_GUIDE.md (NEW)
+   - Quick reference for migration
+   - Excel formula for conversion
+   - Common issues and solutions
+
+8. README.md
+   - Updated Excel schema section
+   - Added PoC mapping explanation
+   - Added migration guide reference
+
+9. CHANGES_SUMMARY.txt (THIS FILE)
+   - Quick summary of all changes
+
+================================================================================
+NO CHANGES REQUIRED
+================================================================================
+
+These components work without modification:
+- app/services/phase2/excel_reader.py (uses updated model)
+- app/services/phase2/word_generator.py (already uses step index)
+- app/services/phase3/* (inherits Phase 2 functionality)
+- Frontend templates (phase1.html, phase2.html, phase3.html)
+- Docker configuration (docker-compose.yml, Dockerfiles)
+
+================================================================================
+BENEFITS
+================================================================================
+
+✓ Simplified Excel structure (1 column vs 10)
+✓ More flexible step count (no 10-step limit)
+✓ Better data management and readability
+✓ Room for additional metadata (CWE, Impact, etc.)
+✓ Clearer delimiter (semicolon)
+✓ Consistent with PoC image mapping
+
+================================================================================
+BREAKING CHANGES
+================================================================================
+
+⚠️ IMPORTANT: Old Excel templates with Step1-Step10 columns are NO LONGER 
+   SUPPORTED. You must use the new template format.
+
+Migration Required:
+- Download new template from Phase 1
+- OR run: python generate_new_template.py
+- Convert existing data (see MIGRATION_QUICK_GUIDE.md)
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+✓ Template Generation:
+  [ ] Run generate_new_template.py
+  [ ] Verify All_Risk_Levels_Template.xlsx created
+  [ ] Verify frontend/All_Risk_Levels_Template.xlsx created
+
+✓ Phase 1 (Download Templates):
+  [ ] Download Excel template from web UI
+  [ ] Verify "Steps" column present
+  [ ] Verify example data uses semicolon delimiters
+
+✓ Phase 2 (Excel → Word):
+  [ ] Upload new Excel with semicolon-delimited steps
+  [ ] Upload Word template
+  [ ] Provide PoC folder path
+  [ ] Verify steps parsed correctly
+  [ ] Verify images inserted correctly
+
+✓ Phase 3 (With PoC ZIP):
+  [ ] Upload new Excel with semicolon-delimited steps
+  [ ] Upload Word template
+  [ ] Upload PoC ZIP (C1/1.png, C1/2.png, etc.)
+  [ ] Verify steps parsed correctly
+  [ ] Verify images mapped and inserted correctly
+
+================================================================================
+QUICK REFERENCE
+================================================================================
+
+Delimiter:    ; (semicolon)
+Format:       Step 1; Step 2; Step 3
+Images:       1.png, 2.png, 3.png
+Parsing:      steps.split(";")
+Mapping:      enumerate(steps, start=1)
+
+================================================================================
+SUPPORT
+================================================================================
+
+Documentation:
+- Full guide: STEPS_COLUMN_UPDATE.md
+- Quick migration: MIGRATION_QUICK_GUIDE.md
+- Main README: README.md
+
+Common Issues:
+1. "Steps not parsing" → Check semicolon delimiters
+2. "Images not appearing" → Check image naming (1.png, not step1.png)
+3. "Old template not working" → Download new template
+
+Generate New Template:
+  python generate_new_template.py
+
+================================================================================

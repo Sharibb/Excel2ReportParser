@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Any
 
 from docx import Document
 from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from docx.shared import Inches
 from docx.table import Table, _Cell
 from docx.text.paragraph import Paragraph
@@ -571,10 +572,19 @@ class WordGenerator:
 
                 # Check if this cell should contain PoC images
                 if "{{POC}}" in cell.text or "{{STEPS}}" in cell.text:
-                    # Always clear the placeholders first
-                    self._clear_poc_placeholders(cell)
-                    # Then insert images if available
-                    self._insert_poc_images(cell, vuln)
+                    # Check if there's a text box with {{POC}} placeholder
+                    textbox_found = self._insert_poc_in_textbox(cell, vuln)
+                    
+                    if not textbox_found:
+                        # Fallback: If no text box found, use old method
+                        # Always clear the placeholders first
+                        self._clear_poc_placeholders(cell)
+                        # Then insert images if available
+                        self._insert_poc_images(cell, vuln)
+                    else:
+                        # Text box found - just add step text outside the box
+                        self._clear_poc_placeholders(cell)
+                        self._insert_step_text_only(cell, vuln)
 
     def _replace_cell_text(self, cell: _Cell, replacements: Dict[str, str]) -> None:
         """
@@ -823,14 +833,17 @@ class WordGenerator:
                         # Add paragraph for image
                         img_paragraph = cell.add_paragraph()
 
-                        # Calculate appropriate width (max 6 inches)
-                        width = self._calculate_image_width(image_path, max_width=6.0)
+                        # Use fixed dimensions to prevent table overflow: 11.56 cm x 6.92 cm
+                        target_width_cm = 11.56
+                        target_height_cm = 6.92
+                        width_inches = target_width_cm * 0.393701  # ~4.55 inches
+                        height_inches = target_height_cm * 0.393701  # ~2.72 inches
 
-                        # Insert image
+                        # Insert image with fixed dimensions
                         img_run = img_paragraph.add_run()
-                        img_run.add_picture(str(image_path), width=Inches(width))
+                        img_run.add_picture(str(image_path), width=Inches(width_inches), height=Inches(height_inches))
 
-                        logger.info(f"✓ Inserted PoC image: {image_path}")
+                        logger.info(f"✓ Inserted PoC image: {image_path} (11.56cm x 6.92cm)")
 
                     except Exception as e:
                         logger.warning(f"Failed to insert image {image_path}: {e}")
@@ -845,6 +858,184 @@ class WordGenerator:
             # Add spacing between steps
             if idx < len(vuln.steps):
                 cell.add_paragraph()  # Empty line between steps
+
+    def _insert_step_text_only(self, cell: _Cell, vuln: Vulnerability) -> None:
+        """
+        Insert only step text (without images) outside the text box.
+        
+        Args:
+            cell: Table cell to insert step text into
+            vuln: Vulnerability with PoC data
+        """
+        if not vuln.steps:
+            return
+        
+        logger.info(f"Inserting step text only for {vuln.vuln_id}")
+        
+        # Add step descriptions as text (images will be in text box)
+        for idx, step_text in enumerate(vuln.steps, start=1):
+            paragraph = cell.add_paragraph()
+            run = paragraph.add_run(f"Step {idx}: {step_text}")
+            run.bold = True
+            
+            # Add spacing between steps
+            if idx < len(vuln.steps):
+                cell.add_paragraph()
+
+    def _insert_poc_in_textbox(self, cell: _Cell, vuln: Vulnerability) -> bool:
+        """
+        Find text box with {{POC}} placeholder and insert images inside it.
+        
+        Args:
+            cell: Table cell that may contain text box
+            vuln: Vulnerability with PoC data
+            
+        Returns:
+            True if text box was found and images inserted, False otherwise
+        """
+        if not vuln.steps or not vuln.poc_folder or not self.poc_base_path:
+            return False
+        
+        try:
+            # Get the cell's underlying XML element
+            tc = cell._element
+            
+            # Search for all txbxContent elements (text box content)
+            # These can be in various locations in the XML structure
+            try:
+                textboxes = tc.xpath('.//w:txbxContent')
+                logger.debug(f"Found {len(textboxes)} standard text boxes")
+            except Exception as e:
+                logger.warning(f"Error searching for standard text boxes: {e}")
+                textboxes = []
+            
+            # Also check for VML text boxes
+            try:
+                vml_textboxes = tc.xpath('.//v:textbox//w:txbxContent')
+                logger.debug(f"Found {len(vml_textboxes)} VML text boxes")
+                textboxes.extend(vml_textboxes)
+            except Exception as e:
+                logger.warning(f"Error searching for VML text boxes: {e}")
+            
+            if not textboxes:
+                logger.warning(f"No text boxes found in cell for {vuln.vuln_id}")
+                return False
+            
+            logger.info(f"Total text boxes found: {len(textboxes)} for {vuln.vuln_id}")
+            
+            # Check each text box for {{POC}} placeholder
+            for txbx_idx, txbx_content in enumerate(textboxes):
+                logger.debug(f"Checking text box {txbx_idx + 1} for {{{{POC}}}} placeholder")
+                # Get all paragraphs in the text box
+                try:
+                    paragraphs = txbx_content.xpath('.//w:p')
+                except Exception as e:
+                    logger.warning(f"Error getting paragraphs from text box: {e}")
+                    continue
+                
+                # Check if any paragraph contains {{POC}}
+                contains_poc = False
+                poc_paragraph_idx = -1
+                
+                for idx, p_elem in enumerate(paragraphs):
+                    try:
+                        p_text = ''.join([
+                            t.text for t in p_elem.xpath('.//w:t')
+                            if t.text
+                        ])
+                        logger.debug(f"Text box paragraph {idx}: '{p_text}'")
+                        if '{{POC}}' in p_text:
+                            contains_poc = True
+                            poc_paragraph_idx = idx
+                            logger.info(f"Found {{{{POC}}}} in paragraph {idx}")
+                            break
+                    except Exception as e:
+                        logger.warning(f"Error reading paragraph {idx}: {e}")
+                        continue
+                
+                if contains_poc:
+                    logger.info(f"Found text box with {{{{POC}}}} placeholder for {vuln.vuln_id}")
+                    
+                    # Clear the {{POC}} placeholder paragraph
+                    if poc_paragraph_idx >= 0 and poc_paragraph_idx < len(paragraphs):
+                        poc_para = paragraphs[poc_paragraph_idx]
+                        # Remove all runs from the placeholder paragraph
+                        try:
+                            for run in poc_para.xpath('.//w:r'):
+                                poc_para.remove(run)
+                            logger.debug(f"Cleared {{{{POC}}}} placeholder from paragraph {poc_paragraph_idx}")
+                        except Exception as e:
+                            logger.warning(f"Error clearing placeholder: {e}")
+                    
+                    # Insert images into the text box
+                    self._insert_images_in_textbox(txbx_content, vuln, poc_paragraph_idx)
+                    return True
+            
+            return False
+            
+        except Exception as e:
+            logger.warning(f"Failed to process text box for {vuln.vuln_id}: {e}")
+            logger.exception(e)
+            return False
+
+    def _insert_images_in_textbox(self, txbx_content: OxmlElement, vuln: Vulnerability, insert_after_idx: int = -1) -> None:
+        """
+        Insert PoC images into a text box element.
+        
+        Args:
+            txbx_content: The w:txbxContent XML element
+            vuln: Vulnerability with PoC data
+            insert_after_idx: Index of paragraph after which to insert images (-1 to append)
+        """
+        try:
+            # Get existing paragraphs
+            existing_paragraphs = txbx_content.findall(qn('w:p'), txbx_content.nsmap)
+            
+            # For each step, insert the corresponding image
+            for idx, step_text in enumerate(vuln.steps, start=1):
+                if vuln.poc_folder and self.poc_base_path:
+                    image_filename = f"{idx}.png"
+                    poc_folder_path = self.poc_base_path / vuln.poc_folder
+                    image_path = poc_folder_path / image_filename
+                    
+                    if image_path.exists():
+                        logger.debug(f"Inserting image {image_path} into text box")
+                        
+                        # Use fixed dimensions: 11.56 cm width x 6.92 cm height
+                        # Convert cm to inches: 1 cm = 0.393701 inches
+                        target_width_cm = 11.56
+                        target_height_cm = 6.92
+                        width_inches = target_width_cm * 0.393701  # ~4.55 inches
+                        height_inches = target_height_cm * 0.393701  # ~2.72 inches
+                        
+                        # Create new paragraph element for the image
+                        p_elem = OxmlElement('w:p')
+                        
+                        # Create a Paragraph object wrapper to use add_picture
+                        temp_para = Paragraph(p_elem, self.document)
+                        
+                        # Add the image with fixed dimensions
+                        run = temp_para.add_run()
+                        run.add_picture(str(image_path), width=Inches(width_inches), height=Inches(height_inches))
+                        
+                        # Append the paragraph to the text box
+                        txbx_content.append(p_elem)
+                        
+                        logger.info(f"✓ Inserted image {image_path} into text box (11.56cm x 6.92cm)")
+                        
+                        # Add spacing paragraph between images
+                        if idx < len(vuln.steps):
+                            spacing_p = OxmlElement('w:p')
+                            # Add empty run to make the paragraph valid
+                            spacing_r = OxmlElement('w:r')
+                            spacing_p.append(spacing_r)
+                            txbx_content.append(spacing_p)
+                    else:
+                        logger.debug(f"Image not found: {image_path}")
+        
+        except Exception as e:
+            logger.warning(f"Failed to insert images in text box: {e}")
+            logger.exception(e)
 
     def _calculate_image_width(
         self, image_path: Path, max_width: float = 6.0

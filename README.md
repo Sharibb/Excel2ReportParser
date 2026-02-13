@@ -65,6 +65,7 @@ poetry run uvicorn app.main:app --reload
 - ✅ Populate Word templates with data
 - ✅ **Duplicate tables WITHOUT recreating them** (preserves formatting)
 - ✅ Insert PoC images from manual folder path
+- ✅ **NEW: Insert PoC images inside text boxes** (better layout control)
 - ✅ Replace placeholders intelligently
 - ✅ Maintain all template styles and formatting
 - ✅ Support custom branding and layouts
@@ -92,13 +93,19 @@ poetry run uvicorn app.main:app --reload
 POC.zip
 └── POC/
     ├── C1/     (Critical 1)
-    │   ├── 1.png
-    │   └── 2.png
+    │   ├── 1.png   ← Step 1 image
+    │   └── 2.png   ← Step 2 image
     ├── H1/     (High 1)
-    │   └── 1.png
+    │   └── 1.png   ← Step 1 image
     └── M1/     (Medium 1)
-        └── 1.png
+        └── 1.png   ← Step 1 image
 ```
+
+**How PoC Mapping Works:**
+- Each step in Excel (delimited by `;`) maps to a numbered image
+- Step 1 text → `1.png`, Step 2 text → `2.png`, etc.
+- Example Excel row: `Steps: Navigate; Enter payload; Submit`
+  - Generates: "Step 1: Navigate" + `1.png`, "Step 2: Enter payload" + `2.png`, "Step 3: Submit" + `3.png`
 
 ---
 
@@ -387,9 +394,13 @@ curl -X POST "http://localhost:8000/api/cleanup/purge-cache"
 |--------|-------------|---------|
 | CVSS Score | Score 0.0-10.0 | 7.5 |
 | POC_Folder | PoC image folder | H1_SQLi |
-| Step1-Step10 | Image filenames | 1.png, 2.png |
+| Steps | Semicolon-delimited steps | Navigate; Enter payload; Submit; Observe |
+| CWE ID | CWE reference | CWE-89 |
+| Impact | Security impact | Complete authentication bypass |
+| References | External links | https://owasp.org/... |
 
-📖 **Detailed schema:** [`templates/SAMPLE_EXCEL_FORMAT.md`](templates/SAMPLE_EXCEL_FORMAT.md)
+📖 **Detailed schema:** [`templates/SAMPLE_EXCEL_FORMAT.md`](templates/SAMPLE_EXCEL_FORMAT.md)  
+📖 **Migration guide:** [`STEPS_COLUMN_UPDATE.md`](STEPS_COLUMN_UPDATE.md)
 
 ---
 
@@ -411,9 +422,10 @@ curl -X POST "http://localhost:8000/api/cleanup/purge-cache"
 - `{{VULN_ID}}`, `{{TITLE}}`, `{{DESCRIPTION}}`
 - `{{RISK_LEVEL}}`, `{{CVSS_SCORE}}`
 - `{{AFFECTED_COMPONENTS}}`, `{{RECOMMENDATION}}`
-- `{{POC}}` (for images)
+- `{{POC}}` (for images - can be in text boxes for better control)
 
-📖 **Template guide:** [`templates/TEMPLATE_GUIDE.md`](templates/TEMPLATE_GUIDE.md)
+📖 **Template guide:** [`templates/TEMPLATE_GUIDE.md`](templates/TEMPLATE_GUIDE.md)  
+📖 **Text box feature:** [`TEXTBOX_POC_FEATURE.md`](TEXTBOX_POC_FEATURE.md)
 
 ---
 

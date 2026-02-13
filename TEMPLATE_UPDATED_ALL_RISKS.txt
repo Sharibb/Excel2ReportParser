@@ -1,0 +1,214 @@
+================================================================================
+          ALL_RISK_LEVELS_TEMPLATE.XLSX - NOW WITH ALL RISK LEVELS
+================================================================================
+
+✅ TEMPLATE REGENERATED: February 12, 2026
+
+================================================================================
+INCLUDED VULNERABILITIES (11 EXAMPLES)
+================================================================================
+
+CRITICAL (2 vulnerabilities)
+────────────────────────────
+1. C1 - SQL Injection in Login Form
+   Steps: Navigate to login page; Enter ' OR '1'='1 in username field; 
+          Submit the form; Observe successful authentication bypass
+   CVSS: 9.8 (Critical)
+   CWE: CWE-89
+   
+2. C2 - Remote Code Execution via File Upload
+   Steps: Login to application; Navigate to upload page; Upload malicious 
+          PHP file; Access uploaded file directly; Execute arbitrary commands
+   CVSS: 8.8 (High/Critical)
+   CWE: CWE-434
+
+HIGH (2 vulnerabilities)
+────────────────────────
+3. H1 - Cross-Site Scripting (XSS) in Search
+   Steps: Navigate to search page; Enter <script>alert('XSS')</script> 
+          in search box; Submit search; Observe script execution in browser
+   CVSS: 6.1
+   CWE: CWE-79
+   
+4. H2 - Broken Authentication - Weak Password Policy
+   Steps: Attempt to register with password '123'; Observe acceptance; 
+          Launch brute force attack; Observe no rate limiting or lockout
+   CVSS: 9.1
+   CWE: CWE-521
+
+MEDIUM (2 vulnerabilities)
+──────────────────────────
+5. M1 - Insecure Direct Object Reference (IDOR)
+   Steps: Login as user A with id=100; Navigate to profile page; 
+          Change id parameter to 101 in URL; Observe unauthorized access
+   CVSS: 4.3
+   CWE: CWE-639
+   
+6. M2 - Missing Rate Limiting on API Endpoints
+   Steps: Send 1000 requests to API endpoint; Observe no rate limiting; 
+          Monitor server resource consumption; Observe potential degradation
+   CVSS: 5.3
+   CWE: CWE-770
+
+LOW (2 vulnerabilities)
+───────────────────────
+7. L1 - Information Disclosure via Error Messages
+   Steps: Navigate to admin page; Enter invalid SQL syntax; 
+          Observe detailed database error message; Extract database info
+   CVSS: 5.3
+   CWE: CWE-209
+   
+8. L2 - Missing Security Headers
+   Steps: Inspect HTTP response headers; Verify absence of security headers; 
+          Attempt clickjacking attack; Observe lack of protection
+   CVSS: 4.2
+   CWE: CWE-693
+
+INFORMATIONAL (2 vulnerabilities)
+──────────────────────────────────
+9. I1 - Verbose Server Banner
+   Steps: Send HTTP request to server; Inspect Server header in response; 
+          Note specific version information disclosed
+   CVSS: 0.0
+   CWE: CWE-200
+   
+10. I2 - Directory Listing Enabled
+    Steps: Navigate to /uploads/ directory; Observe directory listing; 
+           Review exposed file names and structure
+    CVSS: 0.0
+    CWE: CWE-548
+
+================================================================================
+TEMPLATE STRUCTURE
+================================================================================
+
+Columns (13 total):
+───────────────────
+1. Vulnerability ID
+2. Title
+3. Description
+4. Risk Level
+5. CVSS Score
+6. Affected Components
+7. Recommendation
+8. POC_Folder
+9. Steps (semicolon-delimited)
+10. CWE ID
+11. Impact
+12. References
+13. Remediation Effort
+
+================================================================================
+COVERAGE BY RISK LEVEL
+================================================================================
+
+✅ Critical:        2 examples (C1, C2)
+✅ High:            2 examples (H1, H2)
+✅ Medium:          2 examples (M1, M2)
+✅ Low:             2 examples (L1, L2)
+✅ Informational:   2 examples (I1, I2)
+
+Total: 11 vulnerability examples covering ALL risk levels
+
+================================================================================
+FILES UPDATED
+================================================================================
+
+✅ All_Risk_Levels_Template.xlsx (root)
+   Location: C:\Users\sharib\Desktop\Programming\ReportExcel2Doc\
+
+✅ frontend/All_Risk_Levels_Template.xlsx
+   Location: C:\Users\sharib\Desktop\Programming\ReportExcel2Doc\frontend\
+
+================================================================================
+POC FOLDER STRUCTURE EXAMPLE
+================================================================================
+
+To use these examples in Phase 3, create:
+
+POC/
+├── C1/
+│   ├── 1.png (Navigate to login page)
+│   ├── 2.png (Enter ' OR '1'='1)
+│   ├── 3.png (Submit form)
+│   └── 4.png (Observe bypass)
+├── C2/
+│   ├── 1.png (Login to application)
+│   ├── 2.png (Navigate to upload)
+│   ├── 3.png (Upload malicious file)
+│   ├── 4.png (Access file directly)
+│   └── 5.png (Execute commands)
+├── H1/
+│   ├── 1.png (Navigate to search)
+│   ├── 2.png (Enter XSS payload)
+│   ├── 3.png (Submit search)
+│   └── 4.png (Observe execution)
+├── H2/
+│   ├── 1.png (Register with weak password)
+│   ├── 2.png (Password accepted)
+│   ├── 3.png (Launch brute force)
+│   └── 4.png (No rate limiting)
+├── M1/
+│   ├── 1.png (Login as user A)
+│   ├── 2.png (Navigate to profile)
+│   ├── 3.png (Change id parameter)
+│   └── 4.png (Unauthorized access)
+├── M2/
+│   ├── 1.png (Send 1000 requests)
+│   ├── 2.png (No rate limiting)
+│   ├── 3.png (Monitor resources)
+│   └── 4.png (Service degradation)
+├── L1/
+│   ├── 1.png (Navigate to admin)
+│   ├── 2.png (Enter invalid SQL)
+│   ├── 3.png (Detailed error message)
+│   └── 4.png (Extract database info)
+├── L2/
+│   ├── 1.png (Inspect headers)
+│   ├── 2.png (Missing security headers)
+│   ├── 3.png (Clickjacking attempt)
+│   └── 4.png (No protection)
+├── I1/
+│   ├── 1.png (Send HTTP request)
+│   ├── 2.png (Inspect Server header)
+│   └── 3.png (Version disclosed)
+└── I2/
+    ├── 1.png (Navigate to /uploads/)
+    ├── 2.png (Directory listing)
+    └── 3.png (File structure exposed)
+
+================================================================================
+KEY FEATURES
+================================================================================
+
+✅ Comprehensive coverage of all OWASP risk levels
+✅ Realistic vulnerability examples
+✅ Complete CVSS scores with vectors
+✅ CWE mappings for all vulnerabilities
+✅ Detailed impact descriptions
+✅ Actionable remediation recommendations
+✅ Semicolon-delimited steps format
+✅ External OWASP references
+✅ Remediation effort estimates
+
+================================================================================
+USAGE
+================================================================================
+
+1. Download Template:
+   - Visit: http://localhost:5000
+   - Go to Phase 1
+   - Download the Excel template
+   
+2. Customize:
+   - Replace example data with your findings
+   - Keep the semicolon-delimited steps format
+   - Match POC_Folder names to your PoC folders
+
+3. Generate Report:
+   - Phase 2: Upload Excel + Word template + PoC path
+   - Phase 3: Upload Excel + Word template + POC.zip
+
+================================================================================
+STATUS: ✅ COMPLETE - ALL RISK LEVELS INCLUDED
+================================================================================

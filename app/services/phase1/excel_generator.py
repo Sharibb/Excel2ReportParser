@@ -27,16 +27,11 @@ class ExcelGenerator:
         "Affected Components",
         "Recommendation",
         "POC_Folder",
-        "Step1",
-        "Step2",
-        "Step3",
-        "Step4",
-        "Step5",
-        "Step6",
-        "Step7",
-        "Step8",
-        "Step9",
-        "Step10",
+        "Steps",
+        "CWE ID",
+        "Impact",
+        "References",
+        "Remediation Effort",
     ]
 
     def __init__(self) -> None:
@@ -122,9 +117,16 @@ class ExcelGenerator:
             self.sheet.cell(row=row_idx, column=7, value=vuln.recommendation)
             self.sheet.cell(row=row_idx, column=8, value=vuln.poc_folder)
 
-            # PoC steps (columns 9-18)
-            for step_idx, step_value in enumerate(vuln.steps[:10], start=9):
-                self.sheet.cell(row=row_idx, column=step_idx, value=step_value)
+            # PoC steps - join with semicolon delimiter
+            if vuln.steps:
+                steps_delimited = "; ".join(vuln.steps)
+                self.sheet.cell(row=row_idx, column=9, value=steps_delimited)
+            
+            # Additional fields
+            self.sheet.cell(row=row_idx, column=10, value=vuln.cwe_id)
+            self.sheet.cell(row=row_idx, column=11, value=vuln.impact)
+            self.sheet.cell(row=row_idx, column=12, value=vuln.references)
+            self.sheet.cell(row=row_idx, column=13, value=vuln.remediation_effort)
 
     def _apply_formatting(self) -> None:
         """Apply formatting to the worksheet."""
@@ -138,28 +140,28 @@ class ExcelGenerator:
             6: 30,  # Affected Components
             7: 50,  # Recommendation
             8: 20,  # POC_Folder
-            9: 15,  # Step1
-            10: 15,  # Step2
-            11: 15,  # Step3
-            12: 15,  # Step4
-            13: 15,  # Step5
-            14: 15,  # Step6
-            15: 15,  # Step7
-            16: 15,  # Step8
-            17: 15,  # Step9
-            18: 15,  # Step10
+            9: 60,  # Steps (wider for delimited content)
+            10: 15,  # CWE ID
+            11: 40,  # Impact
+            12: 40,  # References
+            13: 15,  # Remediation Effort
         }
 
         for col_idx, width in column_widths.items():
             column_letter = self.sheet.cell(row=1, column=col_idx).column_letter
             self.sheet.column_dimensions[column_letter].width = width
 
-        # Apply text wrapping to description and recommendation columns
-        for row in self.sheet.iter_rows(min_row=2, max_col=18):
+        # Apply text wrapping to multi-line columns
+        for row in self.sheet.iter_rows(min_row=2, max_col=13):
             # Description
             row[2].alignment = Alignment(wrap_text=True, vertical="top")
             # Recommendation
             row[6].alignment = Alignment(wrap_text=True, vertical="top")
+            # Steps
+            row[8].alignment = Alignment(wrap_text=True, vertical="top")
+            # Impact
+            if len(row) > 10:
+                row[10].alignment = Alignment(wrap_text=True, vertical="top")
 
         # Freeze header row
         self.sheet.freeze_panes = "A2"
